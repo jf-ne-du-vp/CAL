@@ -95,6 +95,10 @@ template <class T>
 bool Graph<T>::addVertex(const T &in) {
 	// TODO (4 lines)
 	// HINT: use the findVertex function to check if a vertex already exists
+	if(findVertex(in) != NULL) return false;
+
+	vertexSet.push_back(new Vertex<T>(in));
+
 	return false;
 }
 
@@ -110,7 +114,16 @@ bool Graph<T>::addEdge(const T &sourc, const T &dest, double w) {
 	// TODO (6 lines)
 	// HINT: use findVertex to obtain the actual vertices
 	// HINT: use the next function to actually add the edge
-	return false;
+	//primeiro ver se existe sourc e dest
+	Vertex<T>* src = findVertex(sourc);
+	Vertex<T>* dst = findVertex(dest);
+
+	if(src == NULL || dst == NULL) return false;
+
+	//agora chama a proxima para adicionar a aresta ao vertice de partida(src) o seu vertice de destino e o seu peso
+	src->addEdge(dst,w);
+
+	return true;
 }
 
 /*
@@ -119,7 +132,7 @@ bool Graph<T>::addEdge(const T &sourc, const T &dest, double w) {
  */
 template <class T>
 void Vertex<T>::addEdge(Vertex<T> *d, double w) {
-	// TODO (1 line)
+	adj.push_back(Edge<T>(d,w));
 }
 
 
@@ -135,7 +148,11 @@ bool Graph<T>::removeEdge(const T &sourc, const T &dest) {
 	// TODO (5 lines)
 	// HINT: Use "findVertex" to obtain the actual vertices.
 	// HINT: Use the next function to actually remove the edge.
-	return false;
+    auto src = findVertex(sourc);
+    auto dst = findVertex(dest);
+
+
+	return src->removeEdgeTo(dst);
 }
 
 /*
@@ -147,6 +164,13 @@ template <class T>
 bool Vertex<T>::removeEdgeTo(Vertex<T> *d) {
 	// TODO (6 lines)
 	// HINT: use an iterator to scan the "adj" vector and then erase the edge.
+	for(auto it = adj.begin(); it != adj.end(); it++){
+	    if(it->dest == d){
+	        adj.erase(it);
+            return true;
+	    }
+	}
+
 	return false;
 }
 
@@ -163,7 +187,23 @@ bool Graph<T>::removeVertex(const T &in) {
 	// TODO (10 lines)
 	// HINT: use an iterator to scan the "vertexSet" vector and then erase the vertex.
 	// HINT: take advantage of "removeEdgeTo" to remove incoming edges.
-	return false;
+	auto vRm = findVertex(in);
+	if(vRm == NULL) return false;
+
+	//aqui percorre os vertices do grafo, e em cada vertice e que ve (na funcao removeEdgeTo) se ha arestas com destino do verttice que se quer apagar
+	for(auto it = vertexSet.begin(); it != vertexSet.end(); it++){
+        (*it)->removeEdgeTo(vRm);
+	}
+
+	//agora e que apagamos o vertice em questao
+	//so uso ciclo porque no erase tenho que lhe dar um iterador da posicao
+	for(auto it = vertexSet.begin(); it != vertexSet.end(); it++){
+	    if(*it == vRm){
+	        vertexSet.erase(it);
+	        break;
+	    }
+	}
+	return true;
 }
 
 
@@ -178,6 +218,17 @@ template <class T>
 vector<T> Graph<T>::dfs() const {
 	// TODO (7 lines)
 	vector<T> res;
+
+	for(auto it : vertexSet){
+	    it->visited = false;
+	}
+
+	for(auto it : vertexSet){
+	    if(!it->visited){
+	        dfsVisit(it,res);
+	    }
+	}
+
 	return res;
 }
 
@@ -188,6 +239,14 @@ vector<T> Graph<T>::dfs() const {
 template <class T>
 void Graph<T>::dfsVisit(Vertex<T> *v, vector<T> & res) const {
 	// TODO (7 lines)
+	res.push_back(v->info);
+	v->visited = true;
+
+	for(auto it : v->adj){
+	    if(!it.dest->visited){
+	        dfsVisit(it.dest,res);
+	    }
+	}
 }
 
 /****************** 2b) bfs ********************/
@@ -204,6 +263,26 @@ vector<T> Graph<T>::bfs(const T & source) const {
 	// HINT: Use the flag "visited" to mark newly discovered vertices .
 	// HINT: Use the "queue<>" class to temporarily store the vertices.
 	vector<T> res;
+	queue<Vertex<T>*> tmp;
+
+	for(auto v :vertexSet){
+	    v->visited = false;
+	}
+
+	tmp.push(findVertex(source));
+
+	while(!tmp.empty()){
+	    Vertex<T> *aux = tmp.front();
+	    tmp.pop();
+	    res.push_back(aux->info);
+	    aux->visited = true;
+	    for(auto it : aux->adj){
+	        if(!(it.dest->visited)){
+	            tmp.push(it.dest);
+	        }
+	    }
+	}
+
 	return res;
 }
 
@@ -220,6 +299,39 @@ template<class T>
 vector<T> Graph<T>::topsort() const {
 	// TODO (26 lines)
 	vector<T> res;
+	queue<Vertex<T> *> tmp;
+
+	//reset indegree
+	for(auto v : vertexSet){
+	    v->indegree = 0;
+	}
+
+	//calcular indegree
+	for(auto it = vertexSet.begin(); it != vertexSet.end(); it++){
+	    for(auto in = (*it)->adj.begin(); in != (*it)->adj.end(); in++){
+	        in->dest->indegree += 1;
+	    }
+	}
+
+	//ver se ha algum com indegree = 0, que e por ai que queremos comecar
+	for(auto v : vertexSet){
+	    if(v->indegree == 0){
+	        tmp.push(v);
+	    }
+	}
+
+	while(!tmp.empty()){
+	    Vertex<T> * v = tmp.front();
+	    tmp.pop();
+	    res.push_back(v->info);
+	    for(auto it : v->adj){
+	        it.dest->indegree -=1;
+	        if(it.dest->indegree == 0){
+	            tmp.push(it.dest);
+	        }
+	    }
+	}
+
 	return res;
 }
 
