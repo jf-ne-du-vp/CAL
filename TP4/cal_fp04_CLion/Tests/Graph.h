@@ -348,7 +348,37 @@ vector<T> Graph<T>::topsort() const {
 template <class T>
 int Graph<T>::maxNewChildren(const T & source, T &inf) const {
 	// TODO (28 lines, mostly reused)
-	return 0;
+	auto src = findVertex(source);
+	queue<Vertex<T> *> tmp;
+	int res = 0; //default return
+	int aux; //to compare with res
+
+	if(src == NULL) return 0;
+	for(auto v : vertexSet){
+	    v->visited = false;
+	}
+
+	tmp.push(src);
+
+	while(!tmp.empty()){
+	    Vertex<T> * v = tmp.front();
+	    tmp.pop();
+	    v->visited = true;
+	    aux = 0; //needs to be restarted in every cicle
+	    for(auto it = v->adj.begin(); it != v->adj.end(); it++){
+	        if(it->dest->visited == false){
+	            tmp.push(it->dest);
+	            aux++;
+	        }
+	    }
+	    //remember to update inf as well!!!!
+	    if(aux > res){
+	        res = aux;
+	        inf = v->info;
+	    }
+	}
+
+	return res;
 }
 
 /****************** 3b) isDAG   (HOME WORK)  ********************/
