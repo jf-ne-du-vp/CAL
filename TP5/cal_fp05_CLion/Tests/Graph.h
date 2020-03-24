@@ -9,6 +9,7 @@
 #include <list>
 #include <limits>
 #include <cmath>
+#include <stack>
 #include "MutablePriorityQueue.h"
 
 using namespace std;
@@ -173,7 +174,28 @@ bool Graph<T>::addEdge(const T &sourc, const T &dest, double w) {
 
 template<class T>
 void Graph<T>::unweightedShortestPath(const T &orig) {
-	// TODO
+    queue<Vertex<T>*> tmp;
+
+
+	for(auto v : vertexSet){
+        v->path = NULL;
+        v->dist = INF;
+	}
+    auto aux = findVertex(orig);
+	aux->dist=0;
+	tmp.push(aux);
+
+	while(!tmp.empty()){
+	    aux = tmp.front();
+	    tmp.pop();
+	    for(auto it = aux->adj.begin(); it != aux->adj.end(); it++){
+	        if((*it).dest->dist == INF){
+	            tmp.push((*it).dest);
+                (*it).dest->dist = aux->dist + 1;
+                (*it).dest->path = aux;
+	        }
+	    }
+	}
 }
 
 
@@ -192,7 +214,20 @@ void Graph<T>::bellmanFordShortestPath(const T &orig) {
 template<class T>
 vector<T> Graph<T>::getPathTo(const T &dest) const{
 	vector<T> res;
-	// TODO
+	stack<T> aux;   //como pomos do fim para o inicio a pilha e ideal
+	auto v = findVertex(dest);
+	aux.push(v->info);
+
+	while(v->getPath() != NULL){
+	    v = v->getPath();
+	    aux.push(v->info);
+	}
+	
+	while(!aux.empty()){
+	    res.push_back(aux.top());
+	    aux.pop();
+	}
+
 	return res;
 }
 
