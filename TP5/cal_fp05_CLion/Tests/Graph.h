@@ -201,7 +201,32 @@ void Graph<T>::unweightedShortestPath(const T &orig) {
 
 template<class T>
 void Graph<T>::dijkstraShortestPath(const T &origin) {
-	// TODO
+    MutablePriorityQueue<Vertex<T>> aux;
+
+	for(auto v : vertexSet){
+	    v->path = NULL;
+	    v->dist = INF;
+	    v->visited = false;
+	}
+
+	auto v = findVertex(origin);
+	v->dist = 0;
+	aux.insert(v);
+
+	while(!aux.empty()){
+	    v = aux.extractMin();
+	    for(auto w : v->adj){
+	        if(w.dest->getDist() > (v->getDist() + w.weight)){
+	            w.dest->dist = v->getDist() + w.weight;
+	            w.dest->path = v;
+	            if(!w.dest->visited){       //e por causa desta condicao que temos de por o atributo visited a false
+	                aux.insert(w.dest);
+	                w.dest->visited = true;
+	            }
+	            else aux.decreaseKey(w.dest);
+	        }
+	    }
+	}
 }
 
 
@@ -222,7 +247,7 @@ vector<T> Graph<T>::getPathTo(const T &dest) const{
 	    v = v->getPath();
 	    aux.push(v->info);
 	}
-	
+
 	while(!aux.empty()){
 	    res.push_back(aux.top());
 	    aux.pop();
