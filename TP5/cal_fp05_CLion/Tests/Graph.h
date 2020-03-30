@@ -211,6 +211,7 @@ void Graph<T>::dijkstraShortestPath(const T &origin) {
 
 	auto v = findVertex(origin);
 	v->dist = 0;
+	v->queueIndex = 0;
 	aux.insert(v);
 
 	while(!aux.empty()){
@@ -221,9 +222,13 @@ void Graph<T>::dijkstraShortestPath(const T &origin) {
 	            w.dest->path = v;
 	            if(!w.dest->visited){       //e por causa desta condicao que temos de por o atributo visited a false
 	                aux.insert(w.dest);
+	                w.dest->queueIndex = w.weight;
 	                w.dest->visited = true;
 	            }
-	            else aux.decreaseKey(w.dest);
+	            else {
+	                //w.dest->queueIndex = w.dest->dist;
+	                aux.decreaseKey(w.dest);
+	            }
 	        }
 	    }
 	}
@@ -232,7 +237,28 @@ void Graph<T>::dijkstraShortestPath(const T &origin) {
 
 template<class T>
 void Graph<T>::bellmanFordShortestPath(const T &orig) {
-	// TODO
+	for(auto v : vertexSet){
+	    v->path = NULL;
+	    v->dist = INF;
+	    v->visited = false;
+	}
+
+	auto v = findVertex(orig);
+	v->dist = 0;
+
+	for(int i = 0; i < vertexSet.size(); i++){
+	    for(auto ver : vertexSet){
+	        for(auto w : ver->adj){
+	            if(w.dest->dist > ver->dist + w.weight){
+	                w.dest->dist = ver->dist + w.weight;
+	                w.dest->path = ver;
+	            }
+	        }
+	    }
+	}
+
+	//nos slides diz para por um ciclo para ver se ha ciclos de peso negativo
+	
 }
 
 
