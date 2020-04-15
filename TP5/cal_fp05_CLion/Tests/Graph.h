@@ -102,6 +102,10 @@ template <class T>
 class Graph {
 	vector<Vertex<T> *> vertexSet;    // vertex set
 
+	//para Floyd-Warshall
+	vector<vector<double>> distMin;     //matriz de distancias minimas
+	vector<vector<Vertex<T> *>> vertexSeg;     //matriz de vertices seguintes;
+
 public:
 	Vertex<T> *findVertex(const T &in) const;
 	bool addVertex(const T &in);
@@ -257,15 +261,15 @@ void Graph<T>::bellmanFordShortestPath(const T &orig) {
 	    }
 	}
 
-	//nos slides diz para por um ciclo para ver se ha ciclos de peso negativo
-	
+	//nos slides diz para ver se ha ciclos de peso negativo
+
 }
 
 
 template<class T>
 vector<T> Graph<T>::getPathTo(const T &dest) const{
 	vector<T> res;
-	stack<T> aux;   //como pomos do fim para o inicio a pilha e ideal
+	stack<T> aux;   //como pomos do fim para o inicio a pilha e ideal, ou podemos usar reverse
 	auto v = findVertex(dest);
 	aux.push(v->info);
 
@@ -288,13 +292,117 @@ vector<T> Graph<T>::getPathTo(const T &dest) const{
 
 template<class T>
 void Graph<T>::floydWarshallShortestPath() {
-	// TODO
+    int numVertex = getNumVertex();
+
+
+    //por matrizes com o tamanho pretendido
+
+    vertexSeg.resize(numVertex);
+    for(auto v : vertexSeg)
+        v.resize(numVertex);
+
+    distMin.resize(numVertex);
+    for(auto d: distMin) {
+        d.resize(numVertex);
+        cout << "o meu tamanho e : " << d.size() << endl;
+    }
+
+
+    //por tudo a infinito e anterior a NULL
+    for(int i = 0; i < numVertex; i++){
+        for(int j = 0; j < numVertex; j++){
+            distMin.at(i).at(j) = INF;
+            vertexSeg.at(i).at(j) = NULL;
+        }
+    }
+
+
+    //distancia para ele mesmo a zero e o anterior ele mesmo
+    for(int i = 0; i < numVertex; i++) {
+        distMin.at(i).at(i) = 0;
+        vertexSeg.at(i).at(i) = vertexSet[i];
+    }
+
+
+    //percorrer arestas e por dist para os anterior e o anterior
+    for(auto v : vertexSet){
+        for(auto a : v->adj) {
+            int pos1 = -1, pos2 = -1;
+            for (int i = 0; i < numVertex; i++) {
+                if (vertexSet[i]->info == v->info) {
+                    pos1 = i;
+                } else if (vertexSet[i]->info == a.dest->info) {
+                    pos2 = i;
+                }
+            }
+            if (pos1 != -1 && pos2 != -1) {
+                distMin[pos1][pos2] = a.weight;
+                vertexSeg[pos1][pos2] = a.dest;
+            }
+        }
+    }
+
+
+    //distancias seguintes
+    for(int k = 0; k < numVertex; k++){
+        for(int i = 0 ; i < numVertex; i++){
+            for(int j = 0; j < numVertex; j++){
+                if(distMin[i][j] > distMin[i][k] + distMin[k][j]){
+                    distMin[i][j] = distMin[i][k] + distMin[k][j];
+                    vertexSeg[i][j] = vertexSeg[i][k];
+                }
+            }
+        }
+    }
+
 }
 
 template<class T>
 vector<T> Graph<T>::getfloydWarshallPath(const T &orig, const T &dest) const{
 	vector<T> res;
-	// TODO
+
+	//como afinal a matriz de adjacencias tem o seguinte e nao o anterior ja nao preciso da stack
+    //stack<T> aux;   //como pomos do fim para o inicio a pilha e ideal, ou podemos usar reverse
+	auto v1 = findVertex(orig);
+	auto v2 = findVertex(dest);
+
+	if(v1 == NULL || v2 == NULL) return res;
+
+
+	//saber as posicoes no vertexSet de cada um deles
+    int pos1, pos2;
+	for(int i = 0; i < getNumVertex(); i++){
+	    if(vertexSet[i]->info == v1->info){
+	           pos1 = i;
+	    }
+	}
+
+	for(int i = 0; i < getNumVertex(); i++){
+	    if(vertexSet[i]->info == v2->info){
+	        pos2 = i;
+	    }
+	}
+
+	if(vertexSeg[pos1][pos2] ==  NULL) return res;
+	//agora preenchemos o vetor
+    res.push_back(v1->info);
+	while(v1->info != v2->info){
+	    v1 = vertexSeg[pos1][pos2];
+	    res.push_back(v1->info);
+	    for(int i = 0; i < getNumVertex(); i++){
+	        if(vertexSet.at(i)->info == v1->info){
+	            pos1 = i;
+	        }
+	    }
+	}
+
+	/*
+    while(!aux.empty()){
+        res.push_back(aux.top());
+        aux.pop();
+    }
+*/
+
 	return res;
 }
 
