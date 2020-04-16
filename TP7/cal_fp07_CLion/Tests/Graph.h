@@ -366,15 +366,18 @@ vector<T> Graph<T>::getfloydWarshallPath(const T &orig, const T &dest) const{
 /**************** Minimum Spanning Tree  ***************/
 template <class T>
 bool Graph<T>::addBidirectionalEdge(const T &sourc, const T &dest, double w) {
-    // TODO
-    return false;
+    return (addEdge(sourc,dest,w) && addEdge(dest, sourc, w));
 }
 
 
 
 template <class T>
 vector<Vertex<T>* > Graph<T>::calculatePrim() {
-	// TODO
+    //starting in vertex at pos 0
+    MutablePriorityQueue<Vertex<T>> aux;
+    aux.insert(initSingleSource(vertexSet[0]));
+
+
 	return vertexSet;
 }
 
