@@ -12,6 +12,7 @@ void exercicio3();
 void exercicio1()
 {
     GraphViewer *gv = new GraphViewer(600,600,true);
+    //need to store the image
     gv->setBackground("background.jpg");
     gv->createWindow(600,600);
 
@@ -97,6 +98,24 @@ void exercicio3()
 // Vertices data: "../resources/mapa1/nos.txt"
 // Edges data: "../resources/mapa1/arestas.txt"
 // ...
+
+    GraphViewer *gv = new GraphViewer(600,600,false);
+    gv->createWindow(600,600);
+
+    char separator;
+    int id, x, y;
+
+
+    ifstream sourceNode ("../resources/mapa1/nos.txt");
+    while(sourceNode >> id >> separator >> x >> separator >> y)
+        gv->addNode(id,x,y);
+    sourceNode.close();
+
+    ifstream sourceEdge ("../resources/mapa1/arestas.txt");
+    while(sourceEdge >> id >> separator >> x >> separator >> y)
+        gv->addEdge(id,x,y, EdgeType::UNDIRECTED);
+    sourceEdge.close();
+
 }
 
 int main() {
@@ -109,13 +128,13 @@ int main() {
     /*
       * Uncomment the line below to run Exercise 2
       */
-    exercicio2();
+    //exercicio2();
 
     /*
       * Uncomment the line below to run Exercise 3
       */
 	//
-	//exercicio3();
+	exercicio3();
 
 	getchar();
 	return 0;
