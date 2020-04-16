@@ -214,6 +214,7 @@ Vertex<T> * Graph<T>::initSingleSource(const T &origin) {
 	for(auto v : vertexSet) {
 		v->dist = INF;
 		v->path = nullptr;
+		v->visited = false;
 	}
 	auto s = findVertex(origin);
 	s->dist = 0;
@@ -374,11 +375,33 @@ bool Graph<T>::addBidirectionalEdge(const T &sourc, const T &dest, double w) {
 template <class T>
 vector<Vertex<T>* > Graph<T>::calculatePrim() {
     //starting in vertex at pos 0
+    vector<Vertex<T>*> res;
     MutablePriorityQueue<Vertex<T>> aux;
-    aux.insert(initSingleSource(vertexSet[0]));
+
+    aux.insert(initSingleSource(vertexSet[0]->info));
 
 
-	return vertexSet;
+    while(!aux.empty()){
+        auto v = aux.extractMin();
+        res.push_back(v);
+        v->visited = true;
+        for(auto e: v->adj){
+            //could use func relax
+            if(e.dest->getDist() == INF){
+                e.dest->dist = e.weight + v->dist;
+                e.dest->path = v;
+                aux.insert(e.dest);
+            }
+            else if(e.dest->getDist() > e.weight + v->dist){
+                e.dest->dist = e.weight + v->dist;
+                e.dest->path = v;
+            }
+            if(!e.dest->visited)
+                aux.decreaseKey(e.dest);
+        }
+    }
+
+	return res;
 }
 
 
