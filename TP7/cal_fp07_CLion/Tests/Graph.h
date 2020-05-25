@@ -377,6 +377,7 @@ vector<Vertex<T>* > Graph<T>::calculatePrim() {
     //starting in vertex at pos 0
     vector<Vertex<T>*> res;
     MutablePriorityQueue<Vertex<T>> aux;
+    //by using mutable priority queue O(|E|log|V|)
 
     aux.insert(initSingleSource(vertexSet[0]->info));
 
